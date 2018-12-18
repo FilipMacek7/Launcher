@@ -28,13 +28,13 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
-            searchApps();
+            createButtons();
+           
         }
         List<string> files = new List<string>();
-        string searchApps()
+        string[] allfiles = Directory.GetFiles(@"D:\maceklu161", "*.csproj", SearchOption.AllDirectories);
+        void createButtons()
         {
-            string[] allfiles = Directory.GetFiles(@"D:\maceklu161", "*.csproj", SearchOption.AllDirectories);
-            string value;
             for (int i = 0; i < allfiles.Length - 1; i++)
             {
 
@@ -50,19 +50,35 @@ namespace WpfApp1
 
 
                 string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
-                value = exepath[0];
                 //BUTTON
                 Button newBtn = new Button();
                 newBtn.Name = "Button" + i.ToString();
                 newBtn.Content = System.IO.Path.GetFileNameWithoutExtension(exepath[0]);
+                newBtn.Click += startProcess;
                 sp.Children.Add(newBtn);
-
             }
+        }
+        string getPath(int pathIndex)
+        {
+            XDocument doc = XDocument.Load(allfiles[pathIndex]);
+            //PREDPONA
+            var debug = doc.Descendants().First(p => p.Name.LocalName == "OutputPath").Value;
+            var release = doc.Descendants().Last(p => p.Name.LocalName == "OutputPath").Value;
+
+            //GET EXE
+            files.Add(System.IO.Path.GetFileName(allfiles[pathIndex]));
+            int pocetp = allfiles[pathIndex].Length - files[pathIndex].Length;
+            string path = allfiles[pathIndex].Substring(0, pocetp);
+
+
+            string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
+            string value = exepath[0];
             return value;
         }
         void startProcess(object sender, EventArgs e)
         {
-            initprocess(searchApps());
+            initprocess(getPath());
+            //////////////////////
         }
 
         Process initprocess(string programPath)
@@ -71,7 +87,6 @@ namespace WpfApp1
             proc.StartInfo.FileName = programPath;
             proc.StartInfo.WorkingDirectory = System.IO.Path.GetDirectoryName(programPath);
             proc.Start();
-
             return proc;
         }
 
