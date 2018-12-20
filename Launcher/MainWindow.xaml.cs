@@ -32,7 +32,7 @@ namespace WpfApp1
            
         }
         List<string> files = new List<string>();
-        string[] allfiles = Directory.GetFiles(@"D:\maceklu161", "*.csproj", SearchOption.AllDirectories);
+        string[] allfiles = Directory.GetFiles(@"C:\Users\sadbo\Desktop\Škola\C#", "*.csproj", SearchOption.AllDirectories);
         void createButtons()
         {
             for (int i = 0; i < allfiles.Length - 1; i++)
@@ -52,16 +52,19 @@ namespace WpfApp1
                 string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
                 //BUTTON
                 Button newBtn = new Button();
-                newBtn.Name = "Button"+i.ToString();
+                newBtn.Tag= i.ToString();
                 newBtn.Content = System.IO.Path.GetFileNameWithoutExtension(exepath[0]);
                 newBtn.Click += startProcess;
+                newBtn.Height = 100;
+                newBtn.Width = 150;
+                newBtn.Margin = new Thickness(10, 10, 10, 10);
                 sp.Children.Add(newBtn);
             }
         }
         void startProcess(object sender, EventArgs e)
         {
             Button btn = (Button)sender;
-            int pathIndex = int.Parse(btn.Name.Substring(4, btn.Name.Length - 1));
+            int pathIndex = int.Parse(btn.Tag.ToString());
             XDocument doc = XDocument.Load(allfiles[pathIndex]);
             //PREDPONA
             var debug = doc.Descendants().First(p => p.Name.LocalName == "OutputPath").Value;
