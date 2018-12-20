@@ -52,14 +52,16 @@ namespace WpfApp1
                 string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
                 //BUTTON
                 Button newBtn = new Button();
-                newBtn.Name = "Button" + i.ToString();
+                newBtn.Name = "Button"+i.ToString();
                 newBtn.Content = System.IO.Path.GetFileNameWithoutExtension(exepath[0]);
                 newBtn.Click += startProcess;
                 sp.Children.Add(newBtn);
             }
         }
-        string getPath(int pathIndex)
+        void startProcess(object sender, EventArgs e)
         {
+            Button btn = (Button)sender;
+            int pathIndex = int.Parse(btn.Name.Substring(4, btn.Name.Length - 1));
             XDocument doc = XDocument.Load(allfiles[pathIndex]);
             //PREDPONA
             var debug = doc.Descendants().First(p => p.Name.LocalName == "OutputPath").Value;
@@ -73,12 +75,7 @@ namespace WpfApp1
 
             string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
             string value = exepath[0];
-            return value;
-        }
-        void startProcess(object sender, EventArgs e)
-        {
-            initprocess(getPath());
-            //////////////////////
+            initprocess(value);
         }
 
         Process initprocess(string programPath)
