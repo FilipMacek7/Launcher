@@ -17,7 +17,6 @@ using System.Diagnostics;
 using System.Xml.Linq;
 using System.Xml;
 using System.Xml.XPath;
-
 namespace WpfApp1
 {
     /// <summary>
@@ -28,13 +27,17 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
-            createButtons();
-           
+            launchbutton.Background = Brushes.LightBlue;
         }
+        string currentpath = "";
         List<string> files = new List<string>();
-        string[] allfiles = Directory.GetFiles(@"C:\Users\sadbo\Desktop\Škola\C#", "*.csproj", SearchOption.AllDirectories);
+        string[] allfiles;
+        int clickmode = 1;
         void createButtons()
         {
+            allfiles = Directory.GetFiles(currentpath, "*.csproj", SearchOption.AllDirectories);
+            wp.Children.Clear();
+            textpath.Text = currentpath;
             for (int i = 0; i < allfiles.Length - 1; i++)
             {
 
@@ -50,16 +53,20 @@ namespace WpfApp1
 
 
                 string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
-                //BUTTON
+                //BUTTON      
                 Button newBtn = new Button();
-                newBtn.Tag= i.ToString();
+                newBtn.Tag = i.ToString();
                 newBtn.Content = System.IO.Path.GetFileNameWithoutExtension(exepath[0]);
                 newBtn.Click += startProcess;
                 newBtn.Height = 100;
                 newBtn.Width = 150;
                 newBtn.Margin = new Thickness(10, 10, 10, 10);
-                sp.Children.Add(newBtn);
-            }
+                // newBtn.Children.Add(stckPanel);
+                wp.Children.Add(newBtn);
+                //Icon icon = Icon.ExtractAssociatedIcon(exepath[i]);
+                //newBtn.Content = icon;
+
+            }        
         }
         void startProcess(object sender, EventArgs e)
         {
@@ -69,16 +76,33 @@ namespace WpfApp1
             //PREDPONA
             var debug = doc.Descendants().First(p => p.Name.LocalName == "OutputPath").Value;
             var release = doc.Descendants().Last(p => p.Name.LocalName == "OutputPath").Value;
-
             //GET EXE
             files.Add(System.IO.Path.GetFileName(allfiles[pathIndex]));
             int pocetp = allfiles[pathIndex].Length - files[pathIndex].Length;
             string path = allfiles[pathIndex].Substring(0, pocetp);
 
+            if (clickmode == 1)
+            {
+                string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
+                string value = exepath[0];
+                initprocess(value);
+            }
+            else if (clickmode == 2)
+            {
+                if (System.IO.Directory.Exists(path))
+                {
+                    try
+                    {
+                        System.IO.Directory.Delete(path, true);
+                        createButtons();
+                    }
 
-            string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
-            string value = exepath[0];
-            initprocess(value);
+                    catch (System.IO.IOException a)
+                    {
+                        textpath.Text = a.Message;
+                    }
+                }
+            }
         }
 
         Process initprocess(string programPath)
@@ -88,6 +112,40 @@ namespace WpfApp1
             proc.StartInfo.WorkingDirectory = System.IO.Path.GetDirectoryName(programPath);
             proc.Start();
             return proc;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string newpath = textpath.Text;
+                currentpath = newpath;
+                createButtons();
+            }
+            catch (Exception d)
+            {
+                errortext.Text = d.Message;
+            }
+        }
+
+        private void Launch_Button(object sender, RoutedEventArgs e)
+        {
+            if (clickmode != 1)
+            {
+                clickmode = 1;
+                launchbutton.Background = Brushes.LightBlue;
+                deletebutton.ClearValue(Button.BackgroundProperty);
+            }
+        }
+
+        private void Delete_Activate(object sender, RoutedEventArgs e)
+        {
+            if (clickmode != 2)
+            {
+                clickmode = 2;
+                deletebutton.Background = Brushes.LightBlue;
+                launchbutton.ClearValue(Button.BackgroundProperty);
+            }
         }
 
     }
