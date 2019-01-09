@@ -80,11 +80,15 @@ namespace WpfApp1
             files.Add(System.IO.Path.GetFileName(allfiles[pathIndex]));
             int pocetp = allfiles[pathIndex].Length - files[pathIndex].Length;
             string path = allfiles[pathIndex].Substring(0, pocetp);
+            
+            string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
+            string value = exepath[0];
+            string parent = System.IO.Directory.GetParent(exepath[0]).FullName;
+            string parent2 = System.IO.Directory.GetParent(parent).FullName;
+            string parent3 = System.IO.Directory.GetParent(parent2).FullName;
 
             if (clickmode == 1)
             {
-                string[] exepath = Directory.GetFiles(path + debug, "*.exe", SearchOption.AllDirectories);
-                string value = exepath[0];
                 initprocess(value);
             }
             else if (clickmode == 2)
@@ -93,15 +97,28 @@ namespace WpfApp1
                 {
                     try
                     {
-                        System.IO.Directory.Delete(path, true);
+                        System.IO.Directory.Delete(parent3, true);
                         createButtons();
+                        errortext.Text = "Succefuly deleted.";
                     }
 
                     catch (System.IO.IOException a)
                     {
-                        textpath.Text = a.Message;
+                        errortext.Text = a.Message;
                     }
                 }
+            }
+            else if (clickmode == 3)
+            {
+                try
+                {
+                    System.IO.Directory.Move(parent3, textpath.Text);
+                    errortext.Text = "Succefuly moved.";
+                }
+                catch (System.IO.IOException a)
+                {
+                    errortext.Text = a.Message;
+                }           
             }
         }
 
@@ -114,13 +131,14 @@ namespace WpfApp1
             return proc;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Search_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 string newpath = textpath.Text;
                 currentpath = newpath;
                 createButtons();
+                errortext.Text = "Succefuly processed.";
             }
             catch (Exception d)
             {
@@ -135,6 +153,7 @@ namespace WpfApp1
                 clickmode = 1;
                 launchbutton.Background = Brushes.LightBlue;
                 deletebutton.ClearValue(Button.BackgroundProperty);
+                movebutton.ClearValue(Button.BackgroundProperty);
             }
         }
 
@@ -145,8 +164,19 @@ namespace WpfApp1
                 clickmode = 2;
                 deletebutton.Background = Brushes.LightBlue;
                 launchbutton.ClearValue(Button.BackgroundProperty);
+                movebutton.ClearValue(Button.BackgroundProperty);
             }
         }
 
+        private void Move_Button(object sender, RoutedEventArgs e)
+        {
+            if (clickmode != 3)
+            {
+                clickmode = 3;
+                movebutton.Background = Brushes.LightBlue;
+                launchbutton.ClearValue(Button.BackgroundProperty);
+                deletebutton.ClearValue(Button.BackgroundProperty);
+            }
+        }
     }
 }
